@@ -36,7 +36,7 @@ void makeCmd(T)(string[] args) {
 			mixin("enum int numOfParams = Parameters!("~fullyQualifiedName!T~"."~method~").length;");
 			mixin("alias paramTypes = Parameters!("~fullyQualifiedName!T~"."~method~");");
 
-			string genAssigmentString2(int numOfParams)() {
+			string genAssigmentString(int numOfParams)() {
 				string res = "";
 				foreach (i; 0..numOfParams) {
 					res ~= "to!(paramTypes["~to!string(i)~"])(args["~to!string(i+2)~"]), ";
@@ -45,8 +45,8 @@ void makeCmd(T)(string[] args) {
 				return res[0..$-2];
 			}
 
-			enum string assignmentString2 = genAssigmentString2!numOfParams();
-			mixin("writeln("~fullyQualifiedName!T~"."~method~"("~assignmentString2~"));");
+			enum string assignmentString = genAssigmentString!numOfParams();
+			mixin("writeln("~fullyQualifiedName!T~"."~method~"("~assignmentString~"));");
 		}
 	}
 }
