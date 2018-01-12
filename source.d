@@ -29,53 +29,24 @@ struct Command {
 	}
 }
 
-struct caller(alias T) {
-	// args decleration
-	static foreach (i, p; Parameters!T) {
-		mixin(p.stringof ~ " arg" ~ to!string(i) ~ ";");
-	}
-
-	void call() {
-		enum int numOfParams = Parameters!T.length;
-
-		string genArgsString(int numOfParams) {
-			string args = "";
-			foreach (i; 0..numOfParams) {
-				args ~= "arg" ~ to!string(i) ~ ", ";
-			}
-
-			return args[0..$-2];
-		}
-
-		enum string finalArgs = genArgsString(numOfParams);
-		mixin("writeln("~fullyQualifiedName!T~"("~finalArgs~"));");
-	}
-}
-
 void makeCmd(T)(string[] args) {
 	foreach (method; __traits(allMembers, T)) {
 		if (args[1] == method) {
-			mixin("caller!("~fullyQualifiedName!T~"."~method~") c;");
 
 			mixin("enum int numOfParams = Parameters!("~fullyQualifiedName!T~"."~method~").length;");
 			mixin("alias paramTypes = Parameters!("~fullyQualifiedName!T~"."~method~");");
 
-			string genAssigmentString(int numOfParams)() {
+			string genAssigmentString2(int numOfParams)() {
 				string res = "";
 				foreach (i; 0..numOfParams) {
-					res ~= "c.arg"~to!string(i)~" = to!(paramTypes["~to!string(i)~"])(args["~to!string(i+2)~"]);";
+					res ~= "to!(paramTypes["~to!string(i)~"])(args["~to!string(i+2)~"]), ";
 				}
 
-				return res;
+				return res[0..$-2];
 			}
 
-			enum string assignmentString = genAssigmentString!(numOfParams)();
-
-			//pragma (msg, assignmentString);
-			mixin(assignmentString);
-
-			// Final Call
-			c.call();
+			enum string assignmentString2 = genAssigmentString2!numOfParams();
+			mixin("writeln("~fullyQualifiedName!T~"."~method~"("~assignmentString2~"));");
 		}
 	}
 }
